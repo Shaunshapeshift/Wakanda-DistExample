@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { MenuIcon, X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { MenuIcon, X, Search } from 'lucide-react';
 import ProductTable from './components/ProductTable';
 import DistributorPrices from './components/DistributorPrices';
 import { products, distributors } from './data';
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
+  const productTableRef = useRef<HTMLDivElement>(null);
+  const distributorTableRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (scrollingDiv: HTMLDivElement, otherDiv: HTMLDivElement | null) => {
+    if (otherDiv) {
+      otherDiv.scrollTop = scrollingDiv.scrollTop;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,17 +59,72 @@ function App() {
         )}
       </nav>
 
+      {/* Filters Section */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">House</label>
+              <select className="w-full border border-gray-300 rounded-md shadow-sm p-2">
+                <option value="">All Houses</option>
+                <option value="Chloe">Chloe</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+              <select className="w-full border border-gray-300 rounded-md shadow-sm p-2">
+                <option value="">All Brands</option>
+                <option value="Chloe Nomade EDP">Chloe Nomade EDP</option>
+                <option value="Chloe Nomade EDT">Chloe Nomade EDT</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Distributor</label>
+              <select className="w-full border border-gray-300 rounded-md shadow-sm p-2">
+                <option value="">All Distributors</option>
+                {distributors.map(dist => (
+                  <option key={dist.customerNumber} value={dist.name}>{dist.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 pl-10"
+                />
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Product Table Section - 3/2 width */}
           <div className="lg:col-span-3 bg-white rounded-lg shadow">
-            <ProductTable products={products} />
+            <ProductTable
+              products={products}
+              selectedRow={selectedRow}
+              setSelectedRow={setSelectedRow}
+              tableRef={productTableRef}
+              onScroll={(e) => handleScroll(e.target as HTMLDivElement, distributorTableRef.current)}
+            />
           </div>
 
           {/* Distributor Prices Section - 2/5 width */}
           <div className="lg:col-span-2 bg-white rounded-lg shadow">
-            <DistributorPrices distributors={distributors} />
+            <DistributorPrices
+              distributors={distributors}
+              selectedRow={selectedRow}
+              setSelectedRow={setSelectedRow}
+              tableRef={distributorTableRef}
+              onScroll={(e) => handleScroll(e.target as HTMLDivElement, productTableRef.current)}
+            />
           </div>
         </div>
       </div>
